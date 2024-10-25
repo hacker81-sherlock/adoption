@@ -1,9 +1,16 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 
 
-from .models import User
+from .models import User, Cat
+
+def home(request):
+    cats = Cat.objects.all()
+    return render(request, 'core/home.html', {
+        'cats': cats
+    })
 
 def login_view(request):
     if request.method == "POST":
@@ -53,3 +60,32 @@ def register(request):
         return redirect('home')
     else:
         return render(request, "core/register.html")
+
+@login_required
+def add_cat(request):
+    if request.method == "POST":
+        name = request.POST["name"]
+        age = request.POST["age"]
+        address = request.POST["address"]
+        phone = request.POST["phone"]
+        description = request.POST["description"]
+        image = request.POST["image"]
+        temp_is_ill = request.POST["is_ill"]
+        is_ill = True if temp_is_ill == "Yes" else False
+        owner = request.user
+
+        # Saving the Form Data
+        Cat.objects.create(
+            owner=owner,
+            name=name,
+            age=age,
+            address=address,
+            phone=phone,
+            description=description,
+            image=image,
+            is_ill=is_ill
+        )
+
+        return redirect('home')
+    return render(request, "core/add_cat.html")
+
