@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 
@@ -89,3 +89,16 @@ def add_cat(request):
         return redirect('home')
     return render(request, "core/add_cat.html")
 
+@login_required
+def profile(request):
+    user_cats = Cat.objects.filter(owner=request.user)
+    return render(request, "core/profile.html",{
+        'cats': user_cats
+    })
+
+def cat_details(request, cat_id):
+    cat = get_object_or_404(Cat, pk=cat_id)
+    return render(request, "core/cat_details.html", {
+        'cat': cat,
+        'cat_id': cat_id
+    })
