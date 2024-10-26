@@ -39,13 +39,17 @@
                     {% if cat.age <= 0 %}
                         <span class="text-green-800">Didn't Complete a year</span>
                     {% else %}
-                    <span class="text-green-600">{{ cat.age }} years</span>
+                        <span class="text-green-600">{{ cat.age }} years</span>
                     {% endif %}
                 </p>
                 <p class="text-lg font-semibold text-gray-900">Health Status:
                     <span class="text-green-300">
                         {% if cat.is_ill %}
                             <span class="text-green-600">Ill</span>
+                            <br>
+                            {% if cat.type_of_disease %}
+                                <span class="text-red-600">Illness: {{ cat.type_of_disease }}</span>
+                            {% endif %}
                         {% else %}
                             <span class="text-green-600">Healthy</span>
                         {% endif %}
@@ -62,27 +66,27 @@
 
             <!-- Watchlist Button -->
             {% if user.is_authenticated %}
-            <form method="POST" action="#" class="mt-3">
-                {% csrf_token %}
-                {% if user in cat.watchers.all %}
-                    <button type="submit" class="btn btn-danger w-full">Remove from Watchlist</button>
-                {% else %}
-                    <button type="submit" class="btn btn-primary w-full">Add to Watchlist</button>
-                {% endif %}
-            </form>
+                <form method="POST" action="#" class="mt-3">
+                    {% csrf_token %}
+                    {% if user in cat.watchers.all %}
+                        <button type="submit" class="btn btn-danger w-full">Remove from Watchlist</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary w-full">Add to Watchlist</button>
+                    {% endif %}
+                </form>
 
-            <!-- Adoption Button -->
-            {% if request.user.username == cat.owner %}
-                <form method="POST" action="#" class="mt-3">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger w-full">Close Adoption</button>
-                </form>
-            {% else %}
-                <form method="POST" action="#" class="mt-3">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-primary w-full">Request To Adopt</button>
-                </form>
-            {% endif %}
+                <!-- Adoption Button -->
+                {% if request.user.username == cat.owner %}
+                    <form method="POST" action="#" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger w-full">Close Adoption</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="#" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary w-full">Request To Adopt</button>
+                    </form>
+                {% endif %}
             {% else %}
                 <p class="text-center">
                     <a href="{% url 'login' %}" class="btn btn-success btn-lg w-full">Log in to add to your watchlist and request adoption.</a>
@@ -98,33 +102,33 @@
 
     <!-- Comment Form -->
     {% if user.is_authenticated %}
-    <form method="POST" action="">
-        {% csrf_token %}
-        <div class="mb-3">
-            <textarea class="form-control" name="comment" rows="3" placeholder="Add a comment..." required></textarea>
-        </div>
-        <button type="submit" class="btn btn-success btn-lg w-full">Submit</button>
-    </form>
+        <form method="POST" action="">
+            {% csrf_token %}
+            <div class="mb-3">
+                <textarea class="form-control" name="comment" rows="3" placeholder="Add a comment..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success btn-lg w-full">Submit</button>
+        </form>
     {% else %}
-    <p class="text-center">
-        <a href="{% url 'login' %}" class="btn btn-success btn-lg w-full">Log in to leave a comment</a>
-    </p>
+        <p class="text-center">
+            <a href="{% url 'login' %}" class="btn btn-success btn-lg w-full">Log in to leave a comment</a>
+        </p>
     {% endif %}
 
     <!-- Display Comments -->
     <div class="mt-4">
         {% if comments %}
             {% for comment in comments %}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h6 class="card-subtitle mb-2 text-muted">{{ comment.user.username }}</h6>
-                    <p class="card-text">{{ comment.content }}</p>
-                    <p class="text-right"><small class="text-muted">{{ comment.timestamp|date:"F j, Y, g:i a" }}</small></p>
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-subtitle mb-2 text-muted">{{ comment.user.username }}</h6>
+                        <p class="card-text">{{ comment.content }}</p>
+                        <p class="text-right"><small class="text-muted">{{ comment.timestamp|date:"F j, Y, g:i a" }}</small></p>
+                    </div>
                 </div>
-            </div>
             {% endfor %}
         {% else %}
-        <p class="text-center text-muted">No comments yet. Be the first to comment!</p>
+            <p class="text-center text-muted">No comments yet. Be the first to comment!</p>
         {% endif %}
     </div>
 </div>

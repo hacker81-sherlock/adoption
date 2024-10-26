@@ -70,9 +70,10 @@ def add_cat(request):
         phone = request.POST["phone"]
         description = request.POST["description"]
         image = request.POST["image"]
-        temp_is_ill = request.POST["is_ill"]
-        is_ill = True if temp_is_ill == "Yes" else False
+        temp_is_ill = request.POST.get('is_ill')
         owner = request.user
+        is_ill = True if temp_is_ill == "True" else False
+        illness = request.POST.get("illness", "") if is_ill else ""
 
         # Saving the Form Data
         Cat.objects.create(
@@ -83,7 +84,8 @@ def add_cat(request):
             phone=phone,
             description=description,
             image=image,
-            is_ill=is_ill
+            is_ill=is_ill,
+            type_of_disease=illness
         )
 
         return redirect('home')

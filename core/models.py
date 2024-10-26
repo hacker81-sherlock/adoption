@@ -17,6 +17,7 @@ class Cat(models.Model):
     watchers = models.ManyToManyField(User, related_name='watchlist', blank=True)
     is_adopted = models.BooleanField(default=False)
     is_ill = models.BooleanField(default=False)
+    type_of_disease = models.CharField(max_length=50, blank=True, default="")
     def __str__(self):
         return f'{self.name} by {self.owner}'
 
