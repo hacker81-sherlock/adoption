@@ -4,7 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 
 
-from .models import User, Cat
+from .models import User, Cat, Comment
+
 
 def home(request):
     cats = Cat.objects.all()
@@ -100,7 +101,19 @@ def profile(request):
 
 def cat_details(request, cat_id):
     cat = get_object_or_404(Cat, pk=cat_id)
+    if request.method == "POST":
+        if 'comment' in request.POST:
+            comment = request.POST['comment']
+            comment = Comment(
+                cat=cat,
+                user=request.user,
+                content=comment
+            )
+            comment.save()
+
+    comments = Comment.objects.filter(cat=cat)
     return render(request, "core/cat_details.html", {
         'cat': cat,
-        'cat_id': cat_id
+        'cat_id': cat_id,
+        'comments': comments
     })
