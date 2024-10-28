@@ -66,25 +66,19 @@
 
             <!-- Watchlist Button -->
             {% if user.is_authenticated %}
-                <form method="POST" action="#" class="mt-3">
-                    {% csrf_token %}
-                    {% if user in cat.watchers.all %}
-                        <button type="submit" class="btn btn-danger w-full">Remove from Watchlist</button>
-                    {% else %}
-                        <button type="submit" class="btn btn-primary w-full">Add to Watchlist</button>
-                    {% endif %}
-                </form>
-
-                <!-- Adoption Button -->
-                {% if request.user.username == cat.owner %}
-                    <form method="POST" action="#" class="mt-3">
+                {% if is_owner %}
+                     <form method="POST" action="#" class="mt-3">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger w-full">Close Adoption</button>
+                        <button type="submit" name="close_adoption" class="btn btn-danger w-full">Close Adoption</button>
                     </form>
                 {% else %}
                     <form method="POST" action="#" class="mt-3">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-primary w-full">Request To Adopt</button>
+                        {% if not user_has_requested %}
+                            <button type="submit" name="adoption_request" class="btn btn-danger w-full">Request To Adopt</button>
+                        {% else %}
+                            <button type="submit" name="cancel_adoption_request" class="btn btn-primary w-full">Cancel Adoption Request</button>
+                        {% endif %}
                     </form>
                 {% endif %}
             {% else %}

@@ -2,13 +2,14 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
+from django.utils import timezone
 
 
-from .models import User, Cat, Comment
+from .models import User, Cat, Comment, AdoptionRequests
 
 
 def home(request):
-    cats = Cat.objects.all()
+    cats = Cat.objects.filter(is_available=True)
     return render(request, 'core/home.html', {
         'cats': cats
     })
@@ -100,7 +101,15 @@ def profile(request):
     })
 
 def cat_details(request, cat_id):
-    cat = get_object_or_404(Cat, pk=cat_id)
+    cat = get_object_or_404(Cat, pk=cat_id, is_available=True)
+    is_owner = (
+            request.user.is_authenticated
+            and request.user.username == cat.owner
+    )
+    user_has_requested = (
+        request.user.is_authenticated
+        and AdoptionRequests.objects.filter(cat=cat, user=request.user).exists()
+    )
     if request.method == "POST":
         if 'comment' in request.POST:
             comment = request.POST['comment']
@@ -110,10 +119,30 @@ def cat_details(request, cat_id):
                 content=comment
             )
             comment.save()
+        elif 'adoption_request' in request.POST and not cat.adopted_requests.filter(user=request.user).exists():
+            AdoptionRequests.objects.create(
+                cat=cat,
+                user=request.user,
+                request_date=timezone.now()
+            )
+            return redirect('cat_detail', cat_id=cat_id)
+        elif 'cancel_adoption_request' in request.POST and cat.adopted_requests.filter(user=request.user).exists():
+            cat.adopted_requests.filter(user=request.user).delete()
+            return redirect('cat_detail', cat_id=cat_id)
+        elif 'close_adoption' in request.POST and is_owner:
+            cat.is_available = False
+            cat.save()
+            return redirect('home')
+
+    request_list = AdoptionRequests.objects.filter(cat=cat)
 
     comments = Comment.objects.filter(cat=cat)
     return render(request, "core/cat_details.html", {
         'cat': cat,
         'cat_id': cat_id,
-        'comments': comments
+        'comments': comments,
+        'user_has_requested': user_has_requested,
+        'is_owner':is_owner,
+        'request_list': request_list
     })
+
