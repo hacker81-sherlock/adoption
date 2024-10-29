@@ -30,6 +30,7 @@ class Comment(models.Model):
         return f'comment by {self.user} on {self.cat.name}'
 
 class AdoptionRequests(models.Model):
-    cat = models.ForeignKey(Cat, on_delete=models.CASCADE, related_name='adopted_requests')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    request_date = models.DateTimeField(default=timezone.now, editable=False)
+    cat = models.ForeignKey(Cat, on_delete=models.CASCADE, related_name='adoption_requests')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_requests')
+    request_date = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=[('Pending', 'Pending'), ('Approved', 'Approved')], default='Pending')

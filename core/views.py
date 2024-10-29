@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.utils import timezone
-
+from django.contrib import messages
 
 from .models import User, Cat, Comment, AdoptionRequests
 
@@ -119,16 +119,19 @@ def cat_details(request, cat_id):
                 content=comment
             )
             comment.save()
-        elif 'adoption_request' in request.POST and not cat.adopted_requests.filter(user=request.user).exists():
+
+        elif 'adoption_request' in request.POST and not cat.adoption_requests.filter(user=request.user).exists():
             AdoptionRequests.objects.create(
                 cat=cat,
                 user=request.user,
                 request_date=timezone.now()
             )
             return redirect('cat_detail', cat_id=cat_id)
-        elif 'cancel_adoption_request' in request.POST and cat.adopted_requests.filter(user=request.user).exists():
-            cat.adopted_requests.filter(user=request.user).delete()
+
+        elif 'cancel_adoption_request' in request.POST and cat.adoption_requests.filter(user=request.user).exists():
+            cat.adoption_requests.filter(user=request.user).delete()
             return redirect('cat_detail', cat_id=cat_id)
+
         elif 'close_adoption' in request.POST and is_owner:
             cat.is_available = False
             cat.save()
@@ -144,5 +147,26 @@ def cat_details(request, cat_id):
         'user_has_requested': user_has_requested,
         'is_owner':is_owner,
         'request_list': request_list
+    })
+
+def approve_adoption(request, cat_id):
+    cat = get_object_or_404(Cat, pk=cat_id, is_available=True)
+    is_owner = (
+        request.user.is_authenticated
+        and request.user.username == cat.owner
+    )
+    if request.method == "POST" and is_owner:
+        request_id = request.POST.get('request_id')
+        adoption_request = get_object_or_404(AdoptionRequests, cat=cat, id=request_id)
+        cat.is_adopted = True
+        cat.save()
+
+        adoption_request.status = 'Approved'
+        adoption_request.save()
+        messages.success(request, f"Adoption request by {adoption_request.user.username} approved.")
+        return redirect('cat_detail', cat_id=cat_id)
+    return render(request, 'core/cat_details.html', {
+        'cat': cat,
+        'request_list': cat.adoption_requests.all()
     })
 
